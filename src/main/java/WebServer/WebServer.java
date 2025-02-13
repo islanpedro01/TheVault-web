@@ -1,6 +1,5 @@
-package webServer;
+package WebServer;
 
-import Controllers.UserController;
 import RequestHandler.RequestHandler;
 import Router.Router;
 import org.apache.catalina.Context;
@@ -39,7 +38,7 @@ public class WebServer {
 
     public static void main(String[] args) throws LifecycleException {
         WebServer webServer = new WebServer(8080);
-        Router.addRoute("/users", UserController::listUsers);
+        Router.registerControllers(); // Escaneia e registra os controladores
         webServer.start();
 
     }
