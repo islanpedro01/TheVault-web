@@ -38,7 +38,7 @@ public class WebServer {
 
     public static void main(String[] args) throws LifecycleException {
         WebServer webServer = new WebServer(8080);
-        Router.registerControllers(); // Escaneia e registra os controladores
+        Router.registerControllers("Controllers"); // Escaneia e registra os controladores
         webServer.start();
 
     }
