@@ -2,26 +2,51 @@ package Router;
 
 import Annotations.Controller;
 import Annotations.Route;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import Http.HttpRequest;
+import Http.HttpResponse;
 import org.reflections.Reflections;
 
-import java.io.File;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Router {
-    private static final Map<String, Map<String, BiConsumer<HttpServletRequest, HttpServletResponse>>> routes = new HashMap<>();
+    private static final Map<String, Map<String, BiConsumer<HttpRequest, HttpResponse>>> routes = new HashMap<>();
+    private static final List<RoutePattern> dynamicRoutes = new ArrayList<>();
 
-    public static void addRoute(String path, String method, BiConsumer<HttpServletRequest, HttpServletResponse> handler) {
-        routes.computeIfAbsent(path, k -> new HashMap<>()).put(method.toUpperCase(), handler);
+
+    public static void addRoute(String path, String method, BiConsumer<HttpRequest, HttpResponse> handler) {
+        if (path.contains("{")) { // Se a rota tem parâmetros dinâmicos
+            String regex = path.replaceAll("\\{\\w+}", "([^/]+)"); // Converte {id} para regex
+            dynamicRoutes.add(new RoutePattern(Pattern.compile("^" + regex + "$"), method.toUpperCase(), handler));
+        } else {
+            routes.computeIfAbsent(path, k -> new HashMap<>()).put(method.toUpperCase(), handler);
+        }
     }
 
-    public static BiConsumer<HttpServletRequest, HttpServletResponse> getHandler(String path, String method) {
-        return routes.getOrDefault(path, new HashMap<>()).get(method.toUpperCase());
+    // Pega o handler com base na rota e metodo HTTP
+    public static BiConsumer<HttpRequest, HttpResponse> getHandler(String path, String method) {
+
+        // Verifica primeiro rotas estáticas
+        if (routes.containsKey(path) && routes.get(path).containsKey(method.toUpperCase())) {
+            return routes.get(path).get(method.toUpperCase());
+        }
+        // Verifica rotas dinâmicas
+        for (RoutePattern route : dynamicRoutes) {
+            Matcher matcher = route.pattern.matcher(path);
+            if (matcher.matches() && route.method.equalsIgnoreCase(method)) {
+                return (req, res) -> {
+                    // Adiciona os parâmetros extraídos ao request
+                    for (int i = 0; i < matcher.groupCount(); i++) {
+                        req.addPathParam("param" + (i + 1), matcher.group(i + 1));
+                    }
+                    route.handler.accept(req, res);
+                };
+            }
+        }
+        return null;
     }
 
     public static void registerControllers(String basePackage) {
@@ -37,8 +62,8 @@ public class Router {
                         String path = route.path();
                         String httpMethod = route.method();
 
-                        // Criamos um handler que invoca o método correto do controlador
-                        BiConsumer<HttpServletRequest, HttpServletResponse> handler = (req, resp) -> {
+                        // Criamos um handler que invoca o metodo correto do controlador
+                        BiConsumer<HttpRequest, HttpResponse> handler = (req, resp) -> {
                             try {
                                 method.invoke(controller.getDeclaredConstructor().newInstance(), req, resp);
                             } catch (Exception e) {
@@ -52,6 +77,18 @@ public class Router {
                 }
             }
 
+    }
+    // Classe interna para armazenar rotas dinâmicas
+    private static class RoutePattern {
+        Pattern pattern;
+        String method;
+        BiConsumer<HttpRequest, HttpResponse> handler;
+
+        public RoutePattern(Pattern pattern, String method, BiConsumer<HttpRequest, HttpResponse> handler) {
+            this.pattern = pattern;
+            this.method = method;
+            this.handler = handler;
+        }
     }
 
 
