@@ -1,7 +1,8 @@
 package RequestHandler;
 
+import Http.HttpRequest;
+import Http.HttpResponse;
 import Router.Router;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,14 +12,21 @@ import java.util.function.BiConsumer;
 
 public class RequestHandler extends HttpServlet {
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String path = req.getRequestURI();
         String method = req.getMethod(); // Pega o metodo HTTP da requisicao
 
-        BiConsumer<HttpServletRequest, HttpServletResponse> handler = Router.getHandler(path, method);
+        // Obtém o handler com base na rota e no metodo HTTP
+        BiConsumer<HttpRequest, HttpResponse> handler = Router.getHandler(path, method);
 
         if (handler != null) {
-            handler.accept(req, resp);
+            // Criamos objetos HttpRequest e HttpResponse para encapsular a requisição e resposta
+            HttpRequest request = new HttpRequest(req);
+            HttpResponse response = new HttpResponse(resp);
+            // Passamos os objetos para o handler correspondente
+            handler.accept(request, response);
+            // Envia a resposta ao cliente
+            response.send();
         } else{
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             resp.getWriter().println("404 - Rota não encontrada");
