@@ -2,11 +2,14 @@ package Router;
 
 import Annotations.Controller;
 import Annotations.Route;
+import FormValidations.Validator;
 import Http.HttpRequest;
 import Http.HttpResponse;
+import Request.HttpRequestMapper;
 import org.reflections.Reflections;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
@@ -62,12 +65,35 @@ public class Router {
                         String path = route.path();
                         String httpMethod = route.method();
 
-                        // Criamos um handler que invoca o metodo correto do controlador
+                        // Criamos um handler que invoca o metodo correto do controlador e realiza as validações
                         BiConsumer<HttpRequest, HttpResponse> handler = (req, resp) -> {
                             try {
-                                method.invoke(controller.getDeclaredConstructor().newInstance(), req, resp);
+                                Object controllerInstance = controller.getDeclaredConstructor().newInstance();
+
+                                // Verifica se a classe possui um DTO de entrada e valida
+                                Parameter[] parameters = method.getParameters();
+                                if (parameters.length > 0) {
+                                    Class<?> dtoClass = parameters[0].getType();
+                                    Object dtoInstance = HttpRequestMapper.map(req, dtoClass); // Converte a request para DTO
+
+                                    List<String> errors = Validator.validate(dtoInstance);
+                                    if (!errors.isEmpty()) {
+                                        resp.setStatus(400);
+                                        resp.writeJson(Map.of("errors", errors));
+                                        return;
+                                    }
+
+                                    // Chama o metodo do controlador passando o DTO já validado
+                                    method.invoke(controllerInstance, dtoInstance, resp);
+                                } else {
+                                    // Caso não tenha DTO, apenas executa normalmente
+                                    method.invoke(controllerInstance, req, resp);
+                                }
+
                             } catch (Exception e) {
                                 e.printStackTrace();
+                                resp.setStatus(500);
+                                resp.writeJson(Map.of("error", "Erro interno no servidor"));
                             }
                         };
 

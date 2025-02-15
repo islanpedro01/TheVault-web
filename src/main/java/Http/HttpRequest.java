@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,10 +17,11 @@ public class HttpRequest {
     private Map<String, String> headers = new HashMap<>();
     private String body;
     private String sessionToken;
+    private HttpServletRequest request;
 
-    public HttpRequest(HttpServletRequest request) {
-        this.method = request.getMethod();
-        this.path = request.getRequestURI();
+    public HttpRequest() {
+        this.method = this.request.getMethod();
+        this.path = this.request.getRequestURI();
 
         // Pegando os parâmetros da URL (Query String)
         request.getParameterMap().forEach((key, values) -> queryParams.put(key, values[0]));
@@ -46,6 +48,9 @@ public class HttpRequest {
     public String getPath() { return path; }
     public String getQueryParam(String key) {
         return queryParams.get(key);
+    }
+    public InputStream getInputStream() throws IOException {
+        return request.getInputStream();
     }
     public String getHeader(String name) {
         System.out.println(headers);

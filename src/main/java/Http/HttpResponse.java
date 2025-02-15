@@ -1,10 +1,12 @@
 package Http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 
 public class HttpResponse {
     private HttpServletResponse response;
@@ -12,6 +14,7 @@ public class HttpResponse {
     private Map<String, String> headers = new HashMap<>();
     private String body = "";
     private String sessionToken;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public HttpResponse(HttpServletResponse response) {
         this.response = response;
@@ -20,6 +23,16 @@ public class HttpResponse {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    // Metodo para escrever JSON na resposta
+    public void writeJson(Object data) {
+        try {
+            String jsonResponse = objectMapper.writeValueAsString(data);
+            response.getWriter().write(jsonResponse);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void addHeader(String key, String value) {
