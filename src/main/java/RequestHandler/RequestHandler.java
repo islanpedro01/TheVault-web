@@ -21,7 +21,7 @@ public class RequestHandler extends HttpServlet {
 
         if (handler != null) {
             // Criamos objetos HttpRequest e HttpResponse para encapsular a requisição e resposta
-            HttpRequest request = new HttpRequest(req);
+            HttpRequest request = new HttpRequest(); // tinha um parámetro req aqui
             HttpResponse response = new HttpResponse(resp);
             // Passamos os objetos para o handler correspondente
             handler.accept(request, response);

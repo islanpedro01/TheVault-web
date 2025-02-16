@@ -1,5 +1,7 @@
 package FormValidations.Strategies;
 
+import FormValidations.ValidationStrategy;
+
 public class MinLengthValidator implements ValidationStrategy {
     private final int minLength;
 

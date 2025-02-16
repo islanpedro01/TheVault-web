@@ -1,5 +1,7 @@
 package FormValidations.Strategies;
 
+import FormValidations.ValidationStrategy;
+
 public class NotNullValidator implements ValidationStrategy {
     @Override
     public boolean isValid(Object value) {

@@ -1,5 +1,7 @@
 package FormValidations.Strategies;
 
+import FormValidations.ValidationStrategy;
+
 import java.util.regex.Pattern;
 
 public class EmailValidator implements ValidationStrategy {

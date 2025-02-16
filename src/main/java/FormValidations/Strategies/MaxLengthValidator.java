@@ -1,5 +1,7 @@
 package FormValidations.Strategies;
 
+import FormValidations.ValidationStrategy;
+
 public class MaxLengthValidator implements ValidationStrategy {
     private final int max;
     private final String message;
