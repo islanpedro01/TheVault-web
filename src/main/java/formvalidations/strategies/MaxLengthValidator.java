@@ -4,11 +4,10 @@ import formvalidations.ValidationStrategy;
 
 public class MaxLengthValidator implements ValidationStrategy {
     private final int max;
-    private final String message;
 
-    public MaxLengthValidator(int max, String message) {
+
+    public MaxLengthValidator(int max) {
         this.max = max;
-        this.message = message;
     }
 
     @Override
@@ -18,6 +17,6 @@ public class MaxLengthValidator implements ValidationStrategy {
 
     @Override
     public String getErrorMessage() {
-        return message;
+        return "O campo deve ter menos de " + this.max + " caracteres.";
     }
 }

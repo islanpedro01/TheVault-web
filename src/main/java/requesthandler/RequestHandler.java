@@ -20,8 +20,10 @@ public class RequestHandler extends HttpServlet {
         BiConsumer<HttpRequest, HttpResponse> handler = Router.getHandler(path, method);
 
         if (handler != null) {
+
+
             // Criamos objetos HttpRequest e HttpResponse para encapsular a requisição e resposta
-            HttpRequest request = new HttpRequest(); // tinha um parámetro req aqui
+            HttpRequest request = new HttpRequest(req); // tinha um parámetro req aqui
             HttpResponse response = new HttpResponse(resp);
             // Passamos os objetos para o handler correspondente
             handler.accept(request, response);

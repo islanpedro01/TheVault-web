@@ -12,6 +12,7 @@ public class HttpRequestMapper {
         try {
             return objectMapper.readValue(request.getInputStream(), dtoClass);
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException("Erro ao converter JSON para DTO: " + dtoClass.getSimpleName(), e);
         }
     }

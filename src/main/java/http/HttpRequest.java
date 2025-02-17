@@ -19,9 +19,12 @@ public class HttpRequest {
     private String sessionToken;
     private HttpServletRequest request;
 
-    public HttpRequest() {
-        this.method = this.request.getMethod();
-        this.path = this.request.getRequestURI();
+    public HttpRequest(){}
+
+    public HttpRequest(HttpServletRequest request) {
+        this.method = request.getMethod();
+        this.path = request.getRequestURI();
+        this.request = request;
 
         // Pegando os parâmetros da URL (Query String)
         request.getParameterMap().forEach((key, values) -> queryParams.put(key, values[0]));
@@ -30,16 +33,16 @@ public class HttpRequest {
         request.getHeaderNames().asIterator().forEachRemaining(header -> headers.put(header, request.getHeader(header)));
 
         // Pegando o body da requisição
-        try (BufferedReader reader = request.getReader()) {
-            StringBuilder bodyBuilder = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                bodyBuilder.append(line).append("\n");
-            }
-            this.body = bodyBuilder.toString().trim();
-        } catch (IOException e) {
-            System.err.println("Erro ao ler o corpo da requisição: " + e.getMessage());
-        }
+//        try (BufferedReader reader = request.getReader()) {
+//            StringBuilder bodyBuilder = new StringBuilder();
+//            String line;
+//            while ((line = reader.readLine()) != null) {
+//                bodyBuilder.append(line).append("\n");
+//            }
+//            this.body = bodyBuilder.toString().trim();
+//        } catch (IOException e) {
+//            System.err.println("Erro ao ler o corpo da requisição: " + e.getMessage());
+//        }
 
         // Recuperando o token da sessão a partir do cabeçalho Authorization
         this.sessionToken = request.getHeader("Authorization");

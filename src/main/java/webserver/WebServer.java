@@ -16,6 +16,9 @@ public class WebServer {
         tomcat.setPort(port);
         tomcat.getConnector();
 
+        tomcat.getConnector().setURIEncoding("UTF-8"); // Define encoding da URI
+        tomcat.getConnector().setProperty("useBodyEncodingForURI", "true");
+
         // Criando um diretório temporário para o Tomcat
         File baseDir = new File("tomcat-temp");
         baseDir.mkdir();
@@ -23,6 +26,8 @@ public class WebServer {
 
         // Criando um contexto básico
         Context ctx = tomcat.addContext("/", baseDir.getAbsolutePath());
+        ctx.setRequestCharacterEncoding("UTF-8");
+        ctx.setResponseCharacterEncoding("UTF-8");
 
         Tomcat.addServlet(ctx, "requesthandler", new RequestHandler());
         ctx.addServletMappingDecoded("/*", "requesthandler");
@@ -37,6 +42,7 @@ public class WebServer {
     }
 
     public static void main(String[] args) throws LifecycleException {
+        System.setProperty("file.encoding", "UTF-8");
         WebServer webServer = new WebServer(8080);
         Router.registerControllers("controllers"); // Escaneia e registra os controladores
         webServer.start();

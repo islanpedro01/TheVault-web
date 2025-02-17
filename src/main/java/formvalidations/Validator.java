@@ -1,6 +1,8 @@
 package formvalidations;
 
 import formvalidations.strategies.EmailValidator;
+import formvalidations.strategies.MaxLengthValidator;
+import formvalidations.strategies.MinLengthValidator;
 import formvalidations.strategies.NotNullValidator;
 
 import java.lang.reflect.Field;
@@ -12,6 +14,9 @@ public class Validator {
     static {
         strategies.put(NotNull.class, new NotNullValidator());
         strategies.put(Email.class, new EmailValidator());
+        strategies.put(MinLength.class, new MinLengthValidator(6));
+        strategies.put(MaxLength.class, new MaxLengthValidator(15));
+
     }
 
     public static List<String> validate(Object dto) {

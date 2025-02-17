@@ -74,21 +74,32 @@ public class Router {
                                 Parameter[] parameters = method.getParameters();
                                 if (parameters.length > 0) {
                                     Class<?> dtoClass = parameters[0].getType();
-                                    Object dtoInstance = HttpRequestMapper.map(req, dtoClass); // Converte a request para DTO
+                                    // 🔥 Evita converter HttpRequest como DTO
+                                    if (!dtoClass.equals(HttpRequest.class)) {
+                                        System.out.println("Convertendo JSON para DTO: " + dtoClass.getName());
+                                        try {
+                                            Object dtoInstance = HttpRequestMapper.map(req, dtoClass);
 
-                                    List<String> errors = Validator.validate(dtoInstance);
-                                    if (!errors.isEmpty()) {
-                                        resp.setStatus(400);
-                                        resp.writeJson(Map.of("errors", errors));
-                                        return;
+                                            List<String> errors = Validator.validate(dtoInstance);
+                                            if (!errors.isEmpty()) {
+                                                resp.setStatus(400);
+                                                resp.writeJson(Map.of("errors", errors));
+                                                return;
+                                            }
+
+                                            // Chama o metodo do controlador passando o DTO já validado
+                                            method.invoke(controllerInstance, dtoInstance, resp);
+                                            return;
+                                        } catch (Exception e) { // Captura erro na conversão do JSON
+                                            e.printStackTrace();
+                                            resp.setStatus(400);
+                                            resp.writeJson(Map.of("error", "Erro ao processar o JSON para " + dtoClass.getSimpleName()));
+                                            return;
+                                        }
                                     }
-
-                                    // Chama o metodo do controlador passando o DTO já validado
-                                    method.invoke(controllerInstance, dtoInstance, resp);
-                                } else {
-                                    // Caso não tenha DTO, apenas executa normalmente
-                                    method.invoke(controllerInstance, req, resp);
                                 }
+                                // Se não for DTO, chama normalmente com req e resp
+                                method.invoke(controllerInstance, req, resp);
 
                             } catch (Exception e) {
                                 e.printStackTrace();
